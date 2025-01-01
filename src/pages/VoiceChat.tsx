@@ -12,11 +12,7 @@ import { Button } from '../components/button/Button';
 
 import './VoiceChat.scss';
 
-type Props = {
-  scrapedContent: string;
-};
-
-export const VoiceChat: React.FC<Props> = ({ scrapedContent }) => {
+export const VoiceChat = () => {
   const apiKey = USE_LOCAL_RELAY_SERVER_URL
     ? ''
     : localStorage.getItem('tmp::voice_api_key') ||
@@ -28,23 +24,18 @@ export const VoiceChat: React.FC<Props> = ({ scrapedContent }) => {
 
   const instructions = `SYSTEM SETTINGS:
 ------
+- given a person
+
 INSTRUCTIONS:
-- You will receive website data about a product.
-- You are an artificial intelligence agent responsible to qualify leads and see if they are good fit for the product.
-- Please make sure to respond with a helpful voice via audio
-- Your response should be concise and to the point, keep it short, less than 200 characters max.
-- You can ask the user questions
-- Be open to exploration and conversation
+-	You are a professional HR interviewer for a tech company. Your role is to conduct interviews with candidates to assess their qualifications, experience, and suitability for the job role. Use a conversational tone, ask insightful and structured questions, and provide follow-up questions based on the candidate’s responses.
+- Please make sure to respond with a good quality voice via audio
+- Be open to exploration and conversation, and ask questions as you like
 
 ------
 PERSONALITY:
 - Be upbeat and genuine
 - Speak FAST as if excited
 
-------
-WEBSITE DATA:
-
-${scrapedContent}
 `;
 
   /**
@@ -54,10 +45,10 @@ ${scrapedContent}
    * - RealtimeClient (API client)
    */
   const wavRecorderRef = useRef<WavRecorder>(
-    new WavRecorder({ sampleRate: 24000 })
+    new WavRecorder({ sampleRate: 24000 }),
   );
   const wavStreamPlayerRef = useRef<WavStreamPlayer>(
-    new WavStreamPlayer({ sampleRate: 24000 })
+    new WavStreamPlayer({ sampleRate: 24000 }),
   );
   const clientRef = useRef<RealtimeClient>(
     new RealtimeClient(
@@ -66,8 +57,8 @@ ${scrapedContent}
         : {
             apiKey: apiKey,
             dangerouslyAllowAPIKeyInBrowser: true,
-          }
-    )
+          },
+    ),
   );
 
   /**
@@ -82,6 +73,7 @@ ${scrapedContent}
 
   const [items, setItems] = useState<ItemType[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [isUserTalking, setUserTalking] = useState(false);
 
   const resetAPIKey = useCallback(() => {
     const apiKey = prompt('OpenAI API Key');
@@ -116,7 +108,7 @@ ${scrapedContent}
     client.sendUserMessageContent([
       {
         type: `input_text`,
-        text: `Hello!`, // Can change this initial text
+        text: `Hello, I'm achraf`, // Can change this initial text
       },
     ]);
 
@@ -149,6 +141,8 @@ ${scrapedContent}
 
   /**
    * Switch between Manual <> VAD mode for communication
+   * VAD stand for <Voice activity detection>
+   * api dynamicly detacts where to start responding based on the user state
    */
   const changeTurnEndType = async (value: string) => {
     const client = clientRef.current;
@@ -169,7 +163,7 @@ ${scrapedContent}
    */
   useEffect(() => {
     const conversationEls = [].slice.call(
-      document.body.querySelectorAll('[data-conversation-content]')
+      document.body.querySelectorAll('[data-conversation-content]'),
     );
     for (const el of conversationEls) {
       const conversationEl = el as HTMLDivElement;
@@ -213,7 +207,7 @@ ${scrapedContent}
               '#0099ff',
               10,
               0,
-              8
+              8,
             );
           }
         }
@@ -235,7 +229,7 @@ ${scrapedContent}
               '#fff700',
               10,
               0,
-              8
+              8,
             );
           }
         }
@@ -278,7 +272,7 @@ ${scrapedContent}
         const wavFile = await WavRecorder.decode(
           item.formatted.audio,
           24000,
-          24000
+          24000,
         );
         item.formatted.file = wavFile;
       }
@@ -317,6 +311,7 @@ ${scrapedContent}
       <div className="content-main">
         <div className="content-logs">
           <div className="content-block events">
+            {/* the two canvas elements*/}
             <div className="visualization">
               <div className="visualization-entry client">
                 <canvas ref={clientCanvasRef} />
@@ -329,7 +324,7 @@ ${scrapedContent}
           {items.length > 0 && (
             <div className="content-block conversation">
               <div className="content-block-body" data-conversation-content>
-                {items.map((conversationItem, i) => {
+                {items.map((conversationItem) => {
                   return (
                     <div
                       className="conversation-item"

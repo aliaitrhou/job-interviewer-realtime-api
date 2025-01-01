@@ -262,8 +262,9 @@
     bottom: 4px;
     right: 8px;
     padding: 4px;
-    border-radius: 16px;
+    border-radius: 6px;
     z-index: 10;
+    border: 2px solid white;
     gap: 2px;
     .visualization-entry {
       position: relative;
